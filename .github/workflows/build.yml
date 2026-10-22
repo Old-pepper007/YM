@@ -1,0 +1,29 @@
+name: Build macOS app
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install build tools
+        run: python -m pip install --upgrade pip pyinstaller openpyxl
+      - name: Build app
+        run: pyinstaller --noconfirm --clean --windowed --name YM_matcher YM_matcher_mac.py
+      - name: Package app
+        run: ditto -c -k --sequesterRsrc --keepParent dist/YM_matcher.app YM_matcher_macOS_M1.zip
+      - name: Upload app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: YM_matcher_macOS_M1
+          path: YM_matcher_macOS_M1.zip
+          if-no-files-found: error
